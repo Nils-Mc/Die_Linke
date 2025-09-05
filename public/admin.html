@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+
+  <form id="addForm">
+    Label: <input name="label"><br>
+    URL: <input name="url"><br>
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>Buttons</h2>
+  <div id="buttons"></div>
+
+  <script>
+    async function loadButtons() {
+      const res = await fetch("/api/buttons");
+      const data = await res.json();
+      document.getElementById("buttons").innerHTML = data.map(b =>
+        `<div>${b.label} → ${b.url}
+          <button onclick="deleteButton('${b.id}')">Delete</button>
+        </div>`
+      ).join("");
+    }
+
+    document.getElementById("addForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      await fetch("/api/add", {
+        method: "POST",
+        body: JSON.stringify({ label: form.get("label"), url: form.get("url") })
+      });
+      loadButtons();
+    };
+
+    async function deleteButton(id) {
+      await fetch("/api/delete", {
+        method: "POST",
+        body: JSON.stringify({ id })
+      });
+      loadButtons();
+    }
+
+    loadButtons();
+  </script>
+</body>
+</html>
